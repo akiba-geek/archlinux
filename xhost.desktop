@@ -1,0 +1,5 @@
+[Desktop Entry]
+Exec=/bin/xhost si:localuser:libvirt-qemu
+Name=Getting ready for win10 boot
+Type=Application
+Version=1.0

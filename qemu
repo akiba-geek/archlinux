@@ -1,0 +1,28 @@
+#!/bin/sh
+
+GVT_PCI="0000:00:02.0"
+GVT_GUID="7c3dc484-a00f-4453-9db8-93dc29ebbcf7"
+MDEV_TYPE="i915-GVTg_V5_2"
+if [ $# -ge 3 ]; then
+  if [ "$2" = "prepare" ] && [ "$3" = "begin" ]; then
+    echo '$GVT_GUID' > /sys/devices/pci0000:00/$GVT_PCI/mdev_supported_types/$MDEV_TYPE/create
+    systemctl set-property --runtime -- system.slice AllowedCPUs=0,2
+    systemctl set-property --runtime -- user.slice AllowedCPUs=0,2
+    systemctl set-property --runtime -- init.scope AllowedCPUs=0,2
+    virsh nodedev-detach pci_0000_00_1f_0
+    virsh nodedev-detach pci_0000_00_1f_2
+    virsh nodedev-detach pci_0000_00_1f_3
+    virsh nodedev-detach pci_0000_00_1f_4
+    virsh nodedev-detach pci_0000_00_1f_6
+  elif [ "$2" = "release" ] && [ "$3" = "end" ]; then
+    echo 1 > /sys/devices/pci0000:00/$GVT_PCI/$GVT_GUID/remove
+    systemctl set-property --runtime -- system.slice AllowedCPUs=0-3
+    systemctl set-property --runtime -- user.slice AllowedCPUs=0-3
+    systemctl set-property --runtime -- init.scope AllowedCPUs=0-3
+    virsh nodedev-reattach pci_0000_00_1f_0
+    virsh nodedev-reattach pci_0000_00_1f_2
+    virsh nodedev-reattach pci_0000_00_1f_3
+    virsh nodedev-reattach pci_0000_00_1f_4
+    virsh nodedev-reattach pci_0000_00_1f_6
+  fi
+fi
