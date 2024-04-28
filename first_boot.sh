@@ -6,7 +6,7 @@ cd .cache/yay
 git clone https://aur.archlinux.org/yay-bin.git
 cd yay-bin
 makepkg -si --noconfirm
-LANG=C yay --answerdiff None --answerclean None --mflags "--noconfirm" -S dracut-ukify waterfox-bin ungoogled-chromium-bin slack-desktop notion-app-electron sddm-slice-git nvim-packer-git
+LANG=C yay --answerdiff None --answerclean None --noremovemake --mflags "--noconfirm" -S dracut-ukify waterfox-bin ungoogled-chromium-bin slack-desktop notion-app-electron sddm-slice-git nvim-packer-git
 echo "Setting up user neovim. Enter ':w' once, wait, then 'q', then ':q'".
 nvim ~/.config/nvim/lua/plugins.lua
 rm ~/first_boot.sh

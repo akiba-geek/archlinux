@@ -69,7 +69,7 @@ btrfs filesystem mkswapfile --size "$swap_size"m --uuid clear /mnt/swap/swapfile
 curl -sL https://raw.githubusercontent.com/akiba-geek/archlinux/develop/etc/fstab > /mnt/etc/fstab
 cat > /mnt/etc/dracut-ukify.conf <<EOF
 colorize=auto
-ukify_global_args+=(--cmdline "sysrq_always_enabled=244 video=efifb:off,vesafb:off vfio_pci.ids=8086:1916 intel_iommu=on iommu=pt" )
+ukify_global_args+=(--cmdline "intel_iommu=on i915.enable_gvt=1 kvm.ignore_msrs=1 i915.enable_guc=0 iommu=pt sysrq_always_enabled=244" )
 ukify_global_args+=(--secureboot-private-key /usr/share/secureboot/keys/db/db.key --secureboot-certificate /usr/share/secureboot/keys/db/db.pem)
 EOF
 curl -sL https://raw.githubusercontent.com/akiba-geek/archlinux/develop/etc-dracut.conf.d/40-options.conf > /mnt/etc/dracut.conf.d/40-options.conf
@@ -97,6 +97,9 @@ unmanaged-devices=type:wireguard
 EOF
 mkdir -p /mnt/etc/NetworkManager/dispatcher.d
 curl -sL https://raw.githubusercontent.com/akiba-geek/archlinux/develop/etc-NetworkManager-dispatcher.d/10-secure-net.sh > /mnt/etc/NetworkManager/dispatcher.d/10-secure-net.sh
+sed -i "s/user=/user=$username/" /mnt/etc/NetworkManager/dispatcher.d/10-secure-net.sh
+arch-chroot /mnt chmod +x /etc/NetworkManager/dispatcher.d/10-secure-net.sh
+arch-chroot /mnt systemctl enable NetworkManager-dispatcher.service
 mkdir -p /mnt/etc/systemd/system
 cat > /mnt/etc/systemd/system/system-novpn.slice <<EOF
 [Unit]
@@ -106,16 +109,13 @@ Before=slices.target
 [Slice]
 EOF
 arch-chroot /mnt systemctl daemon-reload
-sed -i "s/user=/user=$username/" /mnt/etc/pacman.conf
-arch-chroot /mnt chmod +x /etc/NetworkManager/dispatcher.d/10-secure-net.sh
-arch-chroot /mnt systemctl enable NetworkManager-dispatcher.service
 mkdir -p /mnt/etc/libvirt/hooks/
 curl -sL https://raw.githubusercontent.com/akiba-geek/archlinux/develop/qemu > /mnt/etc/libvirt/hooks/qemu
 arch-chroot /mnt chmod +x /etc/libvirt/hooks/qemu
 mkdir -p /mnt/etc/libvirt/qemu/
 curl -sL https://raw.githubusercontent.com/akiba-geek/archlinux/develop/win10.xml > /mnt/etc/libvirt/qemu/win10.xml
 arch-chroot /mnt virsh define /etc/libvirt/qemu/win10.xml
-curl -sL https://raw.githubusercontent.com/akiba-geek/archlinux/develop/win10.xml > /mnt/root/xhost.desktop
+curl -sL https://raw.githubusercontent.com/akiba-geek/archlinux/develop/xhost.desktop > /mnt/root/xhost.desktop
 curl -sL https://raw.githubusercontent.com/akiba-geek/archlinux/develop/qemu > /mnt/etc/libvirt/hooks/qemu
 curl -sL https://raw.githubusercontent.com/akiba-geek/archlinux/develop/first_boot.sh > /mnt/root/first_boot.sh
 curl -sL https://raw.githubusercontent.com/akiba-geek/archlinux/develop/home-user-.config-openbox/rc.xml > /mnt/root/openbox-rc.xml
