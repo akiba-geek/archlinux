@@ -18,8 +18,8 @@ fi
 
 export GPG_TTY=$(tty)
 
-alias novpn='systemd-run --user --slice=novpn.slice --scope'
-alias nsudo='sudo systemd-run --slice=system-novpn.slice --scope'
-alias move='rsync -aHAPUXv --remove-source-files'
-alias smove='sudo rsync -aHAPUXv --remove-source-files'
+alias novpn="systemd-run --user --slice=novpn.slice --scope"
+alias nsudo="sudo systemd-run --slice=system-novpn.slice --scope"
+alias move="rsync -aHAPUXv --remove-source-files"
+alias smove="sudo rsync -aHAPUXv --remove-source-files"
 ' >> ~/.bashrc
