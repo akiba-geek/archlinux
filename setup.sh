@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-echo "Welcome to ArchLinux. Please wait while we initialize. Remember to set a supervisor password on your UEFI settings."
+echo "Welcome to Arch Linux. Please wait while we initialize. Remember to set a supervisor password on your UEFI settings."
 sed -i "s/\[options\]/\[options\]\nParallelDownloads = 16/" /etc/pacman.conf
 reflector --save /etc/pacman.d/mirrorlist --protocol https --latest 16 --sort rate
 pacman -Sy dialog sbctl --noconfirm
@@ -161,9 +161,9 @@ cat > /mnt/root/setup.sh <<EOF
 #!/bin/bash -e
 
 if [ ! -d /home/$username ]; then
-  echo "Creating user account. Please enter your user password."
+  echo "Creating user account. Please set your user password."
   homectl create $username --storage=luks --fs-type=btrfs --luks-discard=true --auto-resize-mode=shrink-and-grow --rebalance-weight=10 --member-of=wheel,adm,uucp,libvirt,kvm,tor --uid=1000
-  echo "Starting setup on user account. Please enter your user password again."
+  echo "Starting setup on user account. Please enter your user password."
   homectl activate $username
   mkdir -p /home/$username/.config/systemd/user
   echo "[Slice]" > /home/$username/.config/systemd/user/novpn.slice
@@ -201,7 +201,10 @@ cp /usr/lib/sddm/sddm.conf.d/default.conf /etc/sddm.conf
 sed -i 's/Current=/Current=slice/' /etc/sddm.conf
 sed -i '$ d' /etc/profile
 rm /root/setup.sh
-systemctl enable --now sddm.service
+systemctl enable sddm.service
+dialog --infobox "Setup complete. Rebooting into your new Arch Linux system. Good luck and have fun." 0 0
+sleep 5
+reboot
 EOF
 arch-chroot /mnt chmod 755 /root/setup.sh
 echo "exec /root/setup.sh" >> /mnt/etc/profile
