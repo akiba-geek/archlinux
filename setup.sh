@@ -159,6 +159,7 @@ EOF
 cat > /mnt/root/setup.sh <<EOF
 #!/bin/bash -e
 
+sed -i '$ d' /etc/profile
 echo "Creating user account."
 homectl create $username --storage=luks --fs-type=btrfs --luks-discard=true --auto-resize-mode=shrink-and-grow --rebalance-weight=10 --member-of=wheel,adm,uucp,libvirt,kvm,tor --uid=1000
 echo "Starting setup on user account."
@@ -191,7 +192,6 @@ echo "Setting up root neovim. Enter ':w' once, wait, then 'q', then ':q'".
 nvim /root/.config/nvim/lua/plugins.lua
 swapon /swap/swapfile
 rm /root/setup.sh
-sed -i '$ d' /etc/profile
 cp /usr/lib/sddm/sddm.conf.d/default.conf /etc/sddm.conf
 sed -i 's/Current=/Current=slice/' /etc/sddm.conf
 systemctl enable --now sddm.service
