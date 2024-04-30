@@ -56,7 +56,7 @@ mkdir /mnt/{boot,efi}
 mount /dev/disk/by-partlabel/EFISYSTEM /mnt/efi
 mount /dev/disk/by-partlabel/XBOOTLDR /mnt/boot
 for subvol in var var/log var/cache var/tmp srv home; do btrfs subvolume create "/mnt/$subvol"; done
-pacstrap /mnt base linux-zen linux-hardened linux-firmware intel-ucode btrfs-progs dracut neovim sudo base-devel reflector sbsigntools sbctl networkmanager usb_modeswitch htop rsync lxqt breeze-icons sddm xscreensaver adobe-source-han-sans-jp-fonts adobe-source-han-serif-jp-fonts noto-fonts-cjk systemd-ukify python git libreoffice-fresh libreoffice-fresh-ja nodejs npm openbox tor nm-connection-editor network-manager-applet picom qemu-desktop libvirt edk2-ovmf virt-manager dnsmasq ebtables intel-gpu-tools docker typescript typescript-language-server keepassxc xclip fcitx5-qt fcitx5-gtk fcitx5-mozc fcitx5-configtool breeze breeze5 breeze-gtk fcitx5-breeze polybar sysstat
+pacstrap /mnt base linux-zen linux-hardened linux-firmware intel-ucode btrfs-progs dracut neovim sudo base-devel reflector sbsigntools sbctl networkmanager usb_modeswitch htop rsync lxqt breeze-icons sddm xscreensaver adobe-source-han-sans-jp-fonts adobe-source-han-serif-jp-fonts noto-fonts-cjk systemd-ukify python git libreoffice-fresh libreoffice-fresh-ja nodejs npm openbox tor nm-connection-editor network-manager-applet picom qemu-desktop libvirt edk2-ovmf virt-manager dnsmasq ebtables intel-gpu-tools docker typescript typescript-language-server keepassxc xclip fcitx5-qt fcitx5-gtk fcitx5-mozc fcitx5-configtool breeze breeze5 breeze-gtk fcitx5-breeze polybar sysstat gvfs
 echo $hostname > /mnt/etc/hostname
 echo "KEYMAP=$keymap" > /mnt/etc/vconsole.conf
 sed -i -e "/^#$lang/s/^#//" /mnt/etc/locale.gen
@@ -158,7 +158,7 @@ QT_IM_MODULE=fcitx
 XMODIFIERS=@im=fcitx
 EOF
 cat > /mnt/root/setup.sh <<EOF
-#!/bin/bash -e
+#!/bin/bash
 
 if [ ! -d /home/$username ]; then
   echo "Creating user account. Please set your user password."
@@ -177,6 +177,7 @@ if [ ! -d /home/$username ]; then
   mv /root/polybar.desktop /home/$username/.config/autostart
   mv /root/first_boot.sh /home/$username/first_boot.sh
   chmod 755 /home/$username/first_boot.sh
+  echo "exec /home/$username/first_boot.sh" >> /home/$username/.bashrc
   cp /etc/xdg/picom.conf /home/$username/.config
   sed -i 's/fade-in-step = 0.03;/fade-in-step = 0.1;/' /home/$username/.config/picom.conf
   sed -i 's/fade-out-step = 0.03;/fade-out-step = 0.1;/' /home/$username/.config/picom.conf
@@ -187,23 +188,24 @@ if [ ! -d /home/$username ]; then
 else
   echo "Continuing setup. Please enter your user password."
   homectl activate $username
+  chown -R $username:$username /home/$username
 fi
 echo "Finalizing setup on user account. Please enter your user password again."
-if [ -f /home/$username/first_boot.sh ];
-  su $username -c bash /home/$username/first_boot.sh
-fi
+while [ -f /home/$username/first_boot.sh ]; do
+  su $username -c /home/$username/first_boot.sh
+done
 homectl deactivate $username
 echo "Setting up root neovim. Enter ':w' once, wait, then 'q', then ':q'".
-wait 5
+sleep 5
 nvim /root/.config/nvim/lua/plugins.lua
 swapon /swap/swapfile
 cp /usr/lib/sddm/sddm.conf.d/default.conf /etc/sddm.conf
 sed -i 's/Current=/Current=slice/' /etc/sddm.conf
 sed -i '$ d' /etc/profile
-rm /root/setup.sh
 systemctl enable sddm.service
 dialog --infobox "Setup complete. Rebooting into your new Arch Linux system. Good luck and have fun." 0 0
 sleep 5
+rm /root/setup.sh
 reboot
 EOF
 arch-chroot /mnt chmod 755 /root/setup.sh
