@@ -67,6 +67,7 @@ btrfs subvolume create /mnt/swap
 swap_size=$(free --mebi | awk '/Mem:/ {print $2}')
 btrfs filesystem mkswapfile --size "$swap_size"m --uuid clear /mnt/swap/swapfile
 curl -sL https://raw.githubusercontent.com/akiba-geek/archlinux/develop/etc/fstab > /mnt/etc/fstab
+cp /etc/pacman.d/mirrorlist /mnt/etc/pacman.d/mirrorlist
 cat > /mnt/etc/dracut-ukify.conf <<EOF
 colorize=auto
 ukify_global_args+=(--cmdline "intel_iommu=on i915.enable_gvt=1 kvm.ignore_msrs=1 i915.enable_guc=0 iommu=pt sysrq_always_enabled=244" )
@@ -159,41 +160,47 @@ EOF
 cat > /mnt/root/setup.sh <<EOF
 #!/bin/bash -e
 
-sed -i '$ d' /etc/profile
-echo "Creating user account."
-homectl create $username --storage=luks --fs-type=btrfs --luks-discard=true --auto-resize-mode=shrink-and-grow --rebalance-weight=10 --member-of=wheel,adm,uucp,libvirt,kvm,tor --uid=1000
-echo "Starting setup on user account."
-homectl activate $username
-mkdir -p /home/$username/.config/systemd/user
-echo "[Slice]" > /home/$username/.config/systemd/user/novpn.slice
-systemctl --user daemon-reload
-mkdir -p /home/$username/.config/openbox/
-mv /root/openbox-rc.xml /home/$username/.config/openbox/rc.xml
-cp -r /root/.config/nvim /home/$username/.config
-mv /root/polybar /home/$username/.config/polybar
-mkdir -p /home/$username/.config/autostart/
-mv /root/xhost.desktop /home/$username/.config/autostart
-mv /root/polybar.desktop /home/$username/.config/autostart
-mv /root/first_boot.sh /home/$username/first_boot.sh
-chmod 755 /home/$username/first_boot.sh
-echo "exec /home/$username/first_boot.sh" >> /home/$username/.bashrc
-cp /etc/xdg/picom.conf /home/$username/.config
-sed -i 's/fade-in-step = 0.03;/fade-in-step = 0.1;/' /home/$username/.config/picom.conf
-sed -i 's/fade-out-step = 0.03;/fade-out-step = 0.1;/' /home/$username/.config/picom.conf
-chown -R $username:$username /home/$username
-echo "Select, and activate a network."
-nmtui
-clear
-reflector --save /etc/pacman.d/mirrorlist --protocol https --latest 16 --sort rate
-echo "Finalizing setup on user account."
-su $username
+if [ ! -d /home/$username ]; then
+  echo "Creating user account. Please enter your user password."
+  homectl create $username --storage=luks --fs-type=btrfs --luks-discard=true --auto-resize-mode=shrink-and-grow --rebalance-weight=10 --member-of=wheel,adm,uucp,libvirt,kvm,tor --uid=1000
+  echo "Starting setup on user account. Please enter your user password again."
+  homectl activate $username
+  mkdir -p /home/$username/.config/systemd/user
+  echo "[Slice]" > /home/$username/.config/systemd/user/novpn.slice
+  systemctl --user daemon-reload
+  mkdir -p /home/$username/.config/openbox/
+  mv /root/openbox-rc.xml /home/$username/.config/openbox/rc.xml
+  cp -r /root/.config/nvim /home/$username/.config
+  mv /root/polybar /home/$username/.config/polybar
+  mkdir -p /home/$username/.config/autostart/
+  mv /root/xhost.desktop /home/$username/.config/autostart
+  mv /root/polybar.desktop /home/$username/.config/autostart
+  mv /root/first_boot.sh /home/$username/first_boot.sh
+  chmod 755 /home/$username/first_boot.sh
+  cp /etc/xdg/picom.conf /home/$username/.config
+  sed -i 's/fade-in-step = 0.03;/fade-in-step = 0.1;/' /home/$username/.config/picom.conf
+  sed -i 's/fade-out-step = 0.03;/fade-out-step = 0.1;/' /home/$username/.config/picom.conf
+  chown -R $username:$username /home/$username
+  echo "Opening nmtui. If using wireless networks, select one and activate it."
+  sleep 5
+  nmtui
+else
+  echo "Continuing setup. Please enter your user password."
+  homectl activate $username
+fi
+echo "Finalizing setup on user account. Please enter your user password again."
+if [ -f /home/$username/first_boot.sh ];
+  su $username -c bash /home/$username/first_boot.sh
+fi
 homectl deactivate $username
 echo "Setting up root neovim. Enter ':w' once, wait, then 'q', then ':q'".
+wait 5
 nvim /root/.config/nvim/lua/plugins.lua
 swapon /swap/swapfile
-rm /root/setup.sh
 cp /usr/lib/sddm/sddm.conf.d/default.conf /etc/sddm.conf
 sed -i 's/Current=/Current=slice/' /etc/sddm.conf
+sed -i '$ d' /etc/profile
+rm /root/setup.sh
 systemctl enable --now sddm.service
 EOF
 arch-chroot /mnt chmod 755 /root/setup.sh
