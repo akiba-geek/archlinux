@@ -194,14 +194,14 @@ while [ -f /home/$username/first_boot.sh ]; do
   su $username
 done
 homectl deactivate $username
+sed -i "s/pam_systemd_home.so/pam_systemd_home.so  suspend=true/" /etc/pam.d/system-auth
 echo "Setting up root neovim. Enter ':w' once, wait, then 'q', then ':q'".
 sleep 5
 nvim /root/.config/nvim/lua/plugins.lua
-swapon /swap/swapfile
 cp /usr/lib/sddm/sddm.conf.d/default.conf /etc/sddm.conf
 sed -i 's/Current=/Current=slice/' /etc/sddm.conf
-sed -i '$ d' /etc/profile
 systemctl enable sddm.service
+sed -i '$ d' /etc/profile
 dialog --infobox "Setup complete. Rebooting into your new Arch Linux system. Good luck and have fun." 0 0
 sleep 5
 rm /root/setup.sh
