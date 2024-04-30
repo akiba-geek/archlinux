@@ -1,5 +1,7 @@
 #!/bin/bash -e
 
+chmod 755 .config/polybar/launch.sh
+chmod 755 .config/polybar/iostat.sh
 cd ~
 mkdir -p .cache/yay
 cd .cache/yay

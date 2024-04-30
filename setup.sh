@@ -56,7 +56,7 @@ mkdir /mnt/{boot,efi}
 mount /dev/disk/by-partlabel/EFISYSTEM /mnt/efi
 mount /dev/disk/by-partlabel/XBOOTLDR /mnt/boot
 for subvol in var var/log var/cache var/tmp srv home; do btrfs subvolume create "/mnt/$subvol"; done
-pacstrap /mnt base linux-zen linux-hardened linux-firmware intel-ucode btrfs-progs dracut neovim sudo base-devel reflector sbsigntools sbctl networkmanager usb_modeswitch htop rsync lxqt breeze-icons sddm xscreensaver adobe-source-han-sans-jp-fonts adobe-source-han-serif-jp-fonts noto-fonts-cjk systemd-ukify python git libreoffice-fresh libreoffice-fresh-ja nodejs npm openbox tor nm-connection-editor network-manager-applet picom qemu-desktop libvirt edk2-ovmf virt-manager dnsmasq ebtables intel-gpu-tools docker typescript typescript-language-server keepassxc xclip fcitx5-qt fcitx5-gtk fcitx5-mozc fcitx5-configtool breeze breeze5 breeze-gtk fcitx5-breeze
+pacstrap /mnt base linux-zen linux-hardened linux-firmware intel-ucode btrfs-progs dracut neovim sudo base-devel reflector sbsigntools sbctl networkmanager usb_modeswitch htop rsync lxqt breeze-icons sddm xscreensaver adobe-source-han-sans-jp-fonts adobe-source-han-serif-jp-fonts noto-fonts-cjk systemd-ukify python git libreoffice-fresh libreoffice-fresh-ja nodejs npm openbox tor nm-connection-editor network-manager-applet picom qemu-desktop libvirt edk2-ovmf virt-manager dnsmasq ebtables intel-gpu-tools docker typescript typescript-language-server keepassxc xclip fcitx5-qt fcitx5-gtk fcitx5-mozc fcitx5-configtool breeze breeze5 breeze-gtk fcitx5-breeze polybar sysstat
 echo $hostname > /mnt/etc/hostname
 echo "KEYMAP=$keymap" > /mnt/etc/vconsole.conf
 sed -i -e "/^#$lang/s/^#//" /mnt/etc/locale.gen
@@ -114,8 +114,32 @@ curl -sL https://raw.githubusercontent.com/akiba-geek/archlinux/develop/qemu > /
 arch-chroot /mnt chmod +x /etc/libvirt/hooks/qemu
 mkdir -p /mnt/etc/libvirt/qemu/
 curl -sL https://raw.githubusercontent.com/akiba-geek/archlinux/develop/win10.xml > /mnt/etc/libvirt/qemu/win10.xml
+curl -sL https://raw.githubusercontent.com/akiba-geek/archlinux/develop/win10-test.xml > /mnt/etc/libvirt/qemu/win10-test.xml
+if [[ $lang == "ja_JP.UTF-8" ]]; then
+  sed -i 's/English/Japanese/' /mnt/etc/libvirt/qemu/win10.xml
+  sed -i 's/English/Japanese/' /mnt/etc/libvirt/qemu/win10-test.xml
+fi
 arch-chroot /mnt virsh define /etc/libvirt/qemu/win10.xml
+arch-chroot /mnt virsh define /etc/libvirt/qemu/win10-test.xml
+for i in "${!devicelist[@]}"; do
+  if [[ $(echo ${devicelist[$i]} | awk '{print $1}') == $device ]]; then
+    devicesize=$(echo ${devicelist[$i]} | awk '{print $2}' | sed 's/\..*//')
+  fi
+done
+if [[ $devicesize -ge 1024 ]]; then
+  vm_size="256G"
+elif [[ $devicesize -ge 512 ]]; then
+  vm_size="128G"
+else
+  vm_size="40G"
+fi
+arch-chroot /mnt qemu-img create -f qcow2 /var/lib/libvirt/images/win10.qcow2 $vm_size
 curl -sL https://raw.githubusercontent.com/akiba-geek/archlinux/develop/xhost.desktop > /mnt/root/xhost.desktop
+curl -sL https://raw.githubusercontent.com/akiba-geek/archlinux/develop/polybar.desktop > /mnt/root/polybar.desktop
+mkdir -p /mnt/root/polybar
+curl -sL https://raw.githubusercontent.com/akiba-geek/archlinux/develop/polybar/config.ini > /mnt/root/polybar/config.ini
+curl -sL https://raw.githubusercontent.com/akiba-geek/archlinux/develop/polybar/iostat.sh > /mnt/root/polybar/iostat.sh
+curl -sL https://raw.githubusercontent.com/akiba-geek/archlinux/develop/polybar/launch.sh > /mnt/root/polybar/launch.sh
 curl -sL https://raw.githubusercontent.com/akiba-geek/archlinux/develop/qemu > /mnt/etc/libvirt/hooks/qemu
 curl -sL https://raw.githubusercontent.com/akiba-geek/archlinux/develop/first_boot.sh > /mnt/root/first_boot.sh
 curl -sL https://raw.githubusercontent.com/akiba-geek/archlinux/develop/home-user-.config-openbox/rc.xml > /mnt/root/openbox-rc.xml
@@ -124,7 +148,6 @@ curl -sL https://raw.githubusercontent.com/akiba-geek/archlinux/develop/nvim/ini
 curl -sL https://raw.githubusercontent.com/akiba-geek/archlinux/develop/nvim/coc-settings.json > /mnt/root/.config/nvim/coc-settings.json
 curl -sL https://raw.githubusercontent.com/akiba-geek/archlinux/develop/nvim/lua/options.lua > /mnt/root/.config/nvim/lua/options.lua
 curl -sL https://raw.githubusercontent.com/akiba-geek/archlinux/develop/nvim/lua/plugins.lua > /mnt/root/.config/nvim/lua/plugins.lua
-curl -sL https://raw.githubusercontent.com/akiba-geek/archlinux/develop/nvim/lua/config/null-ls.lua > /mnt/root/.config/nvim/lua/config/null-ls.lua
 arch-chroot /mnt chattr +C /home/
 sed -i "s/\[options\]/\[options\]\nParallelDownloads = 16/" /mnt/etc/pacman.conf
 cat >> /mnt/etc/environment <<EOF
@@ -146,14 +169,16 @@ systemctl --user daemon-reload
 mkdir -p /home/$username/.config/openbox/
 mv /root/openbox-rc.xml /home/$username/.config/openbox/rc.xml
 cp -r /root/.config/nvim /home/$username/.config
+mv /root/polybar /home/$username/.config/polybar
 mkdir -p /home/$username/.config/autostart/
 mv /root/xhost.desktop /home/$username/.config/autostart
+mv /root/polybar.desktop /home/$username/.config/autostart
 mv /root/first_boot.sh /home/$username/first_boot.sh
 chmod 755 /home/$username/first_boot.sh
 echo "exec /home/$username/first_boot.sh" >> /home/$username/.bashrc
 cp /etc/xdg/picom.conf /home/$username/.config
-sed -i 's/fade-in-step = 0.03;/fade-in-step = 0.1;/' /home/$username/.config/picom
-sed -i 's/fade-out-step = 0.03;/fade-out-step = 0.1;/' /home/$username/.config/picom
+sed -i 's/fade-in-step = 0.03;/fade-in-step = 0.1;/' /home/$username/.config/picom.conf
+sed -i 's/fade-out-step = 0.03;/fade-out-step = 0.1;/' /home/$username/.config/picom.conf
 chown -R $username:$username /home/$username
 echo "Select, and activate a network."
 nmtui

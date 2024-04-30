@@ -26,9 +26,6 @@ packer.init({
 return packer.startup(function(use)
   use ("tpope/vim-fugitive")
   use { 'folke/tokyonight.nvim' }
-  use { 'jose-elias-alvarez/null-ls.nvim',
-  		config = [[require('config.null-ls')]],
-  		requires = { 'nvim-lua/plenary.nvim' }}
   use { 'rhysd/open-pdf.vim' }
   use { 'Shougo/unite.vim' }
   use { 'neovim/nvim-lspconfig' }

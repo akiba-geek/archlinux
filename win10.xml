@@ -76,41 +76,15 @@
     <input type='mouse' bus='ps2'/>
     <input type='keyboard' bus='ps2'/>
     <audio id='1' type='alsa'/>
+    <sound model="ich9">
+      <address type="pci" domain="0x0000" bus="0x00" slot="0x0d" function="0x0"/>
+      <audio id='1'>
+    </sound>
     <hostdev mode='subsystem' type='mdev' managed='no' model='vfio-pci' display='off'>
       <source>
         <address uuid='7c3dc484-a00f-4453-9db8-93dc29ebbcf7'/>
       </source>
       <address type='pci' domain='0x0000' bus='0x00' slot='0x02' function='0x0'/>
-    </hostdev>
-    <hostdev mode='subsystem' type='pci' managed='yes'>
-      <source>
-        <address domain='0x0000' bus='0x00' slot='0x1f' function='0x0'/>
-      </source>
-      <address type='pci' domain='0x0000' bus='0x00' slot='0x09' function='0x0'/>
-    </hostdev>
-    <hostdev mode='subsystem' type='pci' managed='yes'>
-      <source>
-        <address domain='0x0000' bus='0x00' slot='0x1f' function='0x2'/>
-      </source>
-      <address type='pci' domain='0x0000' bus='0x00' slot='0x03' function='0x0'/>
-    </hostdev>
-    <hostdev mode='subsystem' type='pci' managed='yes'>
-      <source>
-        <address domain='0x0000' bus='0x00' slot='0x1f' function='0x3'/>
-      </source>
-      <address type='pci' domain='0x0000' bus='0x00' slot='0x0a' function='0x0'/>
-    </hostdev>
-    <hostdev mode='subsystem' type='pci' managed='yes'>
-      <source>
-        <address domain='0x0000' bus='0x00' slot='0x1f' function='0x4'/>
-      </source>
-      <address type='pci' domain='0x0000' bus='0x00' slot='0x0b' function='0x0'/>
-    </hostdev>
-    <hostdev mode='subsystem' type='pci' managed='yes'>
-      <source>
-        <address domain='0x0000' bus='0x00' slot='0x1f' function='0x6'/>
-      </source>
-      <address type='pci' domain='0x0000' bus='0x00' slot='0x0c' function='0x0'/>
     </hostdev>
     <memballoon model='virtio'>
       <address type='pci' domain='0x0000' bus='0x00' slot='0x08' function='0x0'/>
