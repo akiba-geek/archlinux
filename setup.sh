@@ -175,12 +175,12 @@ if [ ! -d /home/$username ]; then
   mkdir -p /home/$username/.config/autostart/
   mv /root/xhost.desktop /home/$username/.config/autostart
   mv /root/polybar.desktop /home/$username/.config/autostart
-  mv /root/first_boot.sh /home/$username/first_boot.sh
-  chmod 755 /home/$username/first_boot.sh
-  echo "exec /home/$username/first_boot.sh" >> /home/$username/.bashrc
   cp /etc/xdg/picom.conf /home/$username/.config
   sed -i 's/fade-in-step = 0.03;/fade-in-step = 0.1;/' /home/$username/.config/picom.conf
   sed -i 's/fade-out-step = 0.03;/fade-out-step = 0.1;/' /home/$username/.config/picom.conf
+  mv /root/first_boot.sh /home/$username/first_boot.sh
+  chmod 755 /home/$username/first_boot.sh
+  echo "exec /home/$username/first_boot.sh" >> /home/$username/.bashrc
   chown -R $username:$username /home/$username
   echo "Opening nmtui. If using wireless networks, select one and activate it."
   sleep 5
@@ -188,11 +188,10 @@ if [ ! -d /home/$username ]; then
 else
   echo "Continuing setup. Please enter your user password."
   homectl activate $username
-  chown -R $username:$username /home/$username
 fi
 echo "Finalizing setup on user account. Please enter your user password again."
 while [ -f /home/$username/first_boot.sh ]; do
-  su $username -c /home/$username/first_boot.sh
+  su $username
 done
 homectl deactivate $username
 echo "Setting up root neovim. Enter ':w' once, wait, then 'q', then ':q'".
