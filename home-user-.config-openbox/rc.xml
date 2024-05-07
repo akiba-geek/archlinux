@@ -349,7 +349,7 @@
           <enabled>false</enabled>
           <name>lock</name>
         </startupnotify>
-        <command>qterminal -e xscreensaver-command -activate</command>
+        <command>lxqt-leave --suspend</command>
       </action>
     </keybind>
     <keybind key="W-r">
