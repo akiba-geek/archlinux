@@ -509,9 +509,12 @@
       </action>
     </keybind>
     <keybind key="W-Tab">
-      <action name="Maximize"/>
       <action name="MoveResizeTo">
         <monitor>next</monitor>
+        <x>10%</x>
+        <y>10%</y>
+        <width>80%</width>
+        <height>80%</height>
       </action>
     </keybind>
   </keyboard>
