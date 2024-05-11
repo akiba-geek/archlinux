@@ -4,7 +4,7 @@ Arch Linux setup script with LUKS full disk encryption, secure boot, systemd-hom
 Arch LinuxをLUKSディスク完全暗号化、セキュアブート、systemd-homed、QEMU/KVMのWindows仮想環境構築準備、VPN/torへの自動接続機能などの機能付きで自動的に構成するスクリプト
 
 ## How to use つかいかた
-`curl -sL https://tinyurl.com/akiba-geek-archlinux | bash`
+`curl -sL https://chuu.site/arch | bash`
 
 ## References 参考にしたもの
 https://github.com/ChrisTitusTech/ArchTitus
