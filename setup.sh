@@ -143,6 +143,9 @@ curl -sL https://raw.githubusercontent.com/akiba-geek/archlinux/develop/polybar/
 curl -sL https://raw.githubusercontent.com/akiba-geek/archlinux/develop/polybar/launch.sh > /mnt/root/polybar/launch.sh
 curl -sL https://raw.githubusercontent.com/akiba-geek/archlinux/develop/qemu > /mnt/etc/libvirt/hooks/qemu
 curl -sL https://raw.githubusercontent.com/akiba-geek/archlinux/develop/first_boot.sh > /mnt/root/first_boot.sh
+curl -sL https://raw.githubusercontent.com/akiba-geek/archlinux/develop/lxqt.conf > /mnt/root/lxqt.conf
+curl -sL https://raw.githubusercontent.com/akiba-geek/archlinux/develop/gtk-settings.ini > /mnt/root/gtk-settings.ini
+curl -sL https://raw.githubusercontent.com/akiba-geek/archlinux/develop/panel.conf > /mnt/root/panel.conf
 curl -sL https://raw.githubusercontent.com/akiba-geek/archlinux/develop/home-user-.config-openbox/rc.xml > /mnt/root/openbox-rc.xml
 mkdir -p /mnt/root/.config/nvim/lua/config
 curl -sL https://raw.githubusercontent.com/akiba-geek/archlinux/develop/nvim/init.lua > /mnt/root/.config/nvim/init.lua
@@ -168,6 +171,11 @@ if [ ! -d /home/$username ]; then
   mkdir -p /home/$username/.config/systemd/user
   echo "[Slice]" > /home/$username/.config/systemd/user/novpn.slice
   systemctl --user daemon-reload
+	mkdir -p /home/$username/.config/lxqt/
+	mv /root/panel.conf /home/$username/.config/lxqt/panel.conf
+	mv /root/lxqt.conf /home/$username/.config/lxqt/lxqt.conf
+	mkdir -p /home/$username/.config/gtk-3.0
+	mv /root/gtk-settings.ini /home/$username/.config/gtk-3.0/settings.ini
   mkdir -p /home/$username/.config/openbox/
   mv /root/openbox-rc.xml /home/$username/.config/openbox/rc.xml
   cp -r /root/.config/nvim /home/$username/.config
