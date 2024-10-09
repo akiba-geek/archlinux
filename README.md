@@ -1,7 +1,7 @@
 # akiba-geek's archlinux setup script
-Arch Linux setup script with LUKS full disk encryption, secure boot, systemd-homed, QEMU/KVM Windows emulation pre-setup, automatic VPN/tor connections
+Arch Linux setup script with LUKS full disk encryption, secure boot, systemd-homed, automatic VPN/tor connections
 
-Arch LinuxをLUKSディスク完全暗号化、セキュアブート、systemd-homed、QEMU/KVMのWindows仮想環境構築準備、VPN/torへの自動接続機能などの機能付きで自動的に構成するスクリプト
+Arch LinuxをLUKSディスク完全暗号化、セキュアブート、systemd-homed、VPN/torへの自動接続機能などの機能付きで自動的に構成するスクリプト
 
 ## How to use つかいかた
 `curl -sL https://chuu.site/arch | bash`

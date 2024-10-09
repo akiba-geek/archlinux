@@ -10,7 +10,7 @@ cd yay-bin
 echo "Please enter your user password when you are asked. We may ask a few times."
 sleep 5
 makepkg -si --noconfirm
-yay --noconfirm --answerdiff None --answerclean None --noremovemake --mflags "--noconfirm" -S dracut-ukify waterfox-bin ungoogled-chromium-bin slack-desktop notion-app-electron sddm-slice-git nvim-packer-git
+yay --noconfirm --answerdiff None --answerclean None --noremovemake --mflags "--noconfirm" -S dracut-ukify waterfox-bin ungoogled-chromium-bin slack-desktop sddm-slice-git nvim-packer-git
 echo "Setting up user neovim. Enter ':w' once, wait, then 'q', then ':q'".
 sleep 5
 nvim ~/.config/nvim/lua/plugins.lua

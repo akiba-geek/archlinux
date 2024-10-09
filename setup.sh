@@ -56,7 +56,7 @@ mkdir /mnt/{boot,efi}
 mount /dev/disk/by-partlabel/EFISYSTEM /mnt/efi
 mount /dev/disk/by-partlabel/XBOOTLDR /mnt/boot
 for subvol in var var/log var/cache var/tmp srv home; do btrfs subvolume create "/mnt/$subvol"; done
-pacstrap /mnt base linux-zen linux-hardened linux-firmware intel-ucode btrfs-progs dracut neovim sudo base-devel reflector sbsigntools sbctl networkmanager usb_modeswitch htop rsync lxqt breeze-icons sddm xscreensaver adobe-source-han-sans-jp-fonts adobe-source-han-serif-jp-fonts noto-fonts-cjk systemd-ukify python git libreoffice-fresh libreoffice-fresh-ja nodejs npm openbox tor nm-connection-editor network-manager-applet picom qemu-desktop libvirt edk2-ovmf virt-manager dnsmasq ebtables intel-gpu-tools docker typescript typescript-language-server keepassxc xclip fcitx5-qt fcitx5-gtk fcitx5-mozc fcitx5-configtool breeze breeze5 breeze-gtk fcitx5-breeze polybar sysstat gvfs
+pacstrap /mnt base linux-zen linux-hardened linux-firmware intel-ucode btrfs-progs dracut neovim sudo base-devel reflector sbsigntools sbctl networkmanager usb_modeswitch htop rsync lxqt breeze-icons sddm xscreensaver adobe-source-han-sans-jp-fonts adobe-source-han-serif-jp-fonts noto-fonts-cjk systemd-ukify python git libreoffice-fresh libreoffice-fresh-ja nodejs npm openbox tor nm-connection-editor network-manager-applet picom docker typescript typescript-language-server keepassxc xclip fcitx5-qt fcitx5-gtk fcitx5-mozc fcitx5-configtool breeze breeze5 breeze-gtk fcitx5-breeze polybar sysstat gvfs
 echo $hostname > /mnt/etc/hostname
 echo "KEYMAP=$keymap" > /mnt/etc/vconsole.conf
 sed -i -e "/^#$lang/s/^#//" /mnt/etc/locale.gen
@@ -70,8 +70,8 @@ curl -sL https://raw.githubusercontent.com/akiba-geek/archlinux/develop/etc/fsta
 cp /etc/pacman.d/mirrorlist /mnt/etc/pacman.d/mirrorlist
 cat > /mnt/etc/dracut-ukify.conf <<EOF
 colorize=auto
-ukify_global_args+=(--cmdline "intel_iommu=on i915.enable_gvt=1 kvm.ignore_msrs=1 i915.enable_guc=0 iommu=pt sysrq_always_enabled=244" )
-ukify_global_args+=(--secureboot-private-key /usr/share/secureboot/keys/db/db.key --secureboot-certificate /usr/share/secureboot/keys/db/db.pem)
+ukify_global_args+=(--cmdline "sysrq_always_enabled=244" )
+ukify_global_args+=(--secureboot-private-key /var/lib/sbctl/keys/db/db.key --secureboot-certificate /var/lib/sbctl/keys/db/db.pem)
 EOF
 curl -sL https://raw.githubusercontent.com/akiba-geek/archlinux/develop/etc-dracut.conf.d/40-options.conf > /mnt/etc/dracut.conf.d/40-options.conf
 curl -sL https://raw.githubusercontent.com/akiba-geek/archlinux/develop/etc-dracut.conf.d/50-secure-boot.conf > /mnt/etc/dracut.conf.d/50-secure-boot.conf
@@ -101,7 +101,7 @@ curl -sL https://raw.githubusercontent.com/akiba-geek/archlinux/develop/etc-Netw
 sed -i "s/user=/user=$username/" /mnt/etc/NetworkManager/dispatcher.d/10-secure-net.sh
 arch-chroot /mnt chmod +x /etc/NetworkManager/dispatcher.d/10-secure-net.sh
 arch-chroot /mnt systemctl enable NetworkManager-dispatcher.service
-mkdir -p /mnt/etc/systemd/system
+mkdir -p /mnt/etc/systemd/system/systemd-suspend.service.d
 cat > /mnt/etc/systemd/system/system-novpn.slice <<EOF
 [Unit]
 Description=novpn.slice for system level
@@ -109,32 +109,11 @@ Before=slices.target
 
 [Slice]
 EOF
+cat > /mnt/etc/systemd/system/systemd-suspend.service.d/disable_freeze_user_session.conf <<EOF
+[Service]
+Environment="SYSTEMD_SLEEP_FREEZE_USER_SESSIONS=false"
+EOF
 arch-chroot /mnt systemctl daemon-reload
-mkdir -p /mnt/etc/libvirt/hooks/
-curl -sL https://raw.githubusercontent.com/akiba-geek/archlinux/develop/qemu > /mnt/etc/libvirt/hooks/qemu
-arch-chroot /mnt chmod +x /etc/libvirt/hooks/qemu
-mkdir -p /mnt/etc/libvirt/qemu/
-curl -sL https://raw.githubusercontent.com/akiba-geek/archlinux/develop/win10.xml > /mnt/etc/libvirt/qemu/win10.xml
-curl -sL https://raw.githubusercontent.com/akiba-geek/archlinux/develop/win10-test.xml > /mnt/etc/libvirt/qemu/win10-test.xml
-if [[ $lang == "ja_JP.UTF-8" ]]; then
-  sed -i 's/English/Japanese/' /mnt/etc/libvirt/qemu/win10.xml
-  sed -i 's/English/Japanese/' /mnt/etc/libvirt/qemu/win10-test.xml
-fi
-arch-chroot /mnt virsh define /etc/libvirt/qemu/win10.xml
-arch-chroot /mnt virsh define /etc/libvirt/qemu/win10-test.xml
-for i in "${!devicelist[@]}"; do
-  if [[ $(echo ${devicelist[$i]} | awk '{print $1}') == $device ]]; then
-    devicesize=$(echo ${devicelist[$i]} | awk '{print $2}' | sed 's/\..*//')
-  fi
-done
-if [[ $devicesize -ge 1024 ]]; then
-  vm_size="256G"
-elif [[ $devicesize -ge 512 ]]; then
-  vm_size="128G"
-else
-  vm_size="40G"
-fi
-arch-chroot /mnt qemu-img create -f qcow2 /var/lib/libvirt/images/win10.qcow2 $vm_size
 curl -sL https://raw.githubusercontent.com/akiba-geek/archlinux/develop/xhost.desktop > /mnt/root/xhost.desktop
 curl -sL https://raw.githubusercontent.com/akiba-geek/archlinux/develop/polybar.desktop > /mnt/root/polybar.desktop
 mkdir -p /mnt/root/polybar
@@ -165,7 +144,7 @@ cat > /mnt/root/setup.sh <<EOF
 
 if [ ! -d /home/$username ]; then
   echo "Creating user account. Please set your user password."
-  homectl create $username --storage=luks --fs-type=btrfs --luks-discard=true --auto-resize-mode=shrink-and-grow --rebalance-weight=10 --member-of=wheel,adm,uucp,libvirt,kvm,tor --uid=1000
+  homectl create $username --storage=luks --fs-type=btrfs --disk-size=64G --auto-resize-mode=off --rebalance-weight=off --member-of=wheel,adm,uucp,tor --uid=1000
   echo "Starting setup on user account. Please enter your user password."
   homectl activate $username
   mkdir -p /home/$username/.config/systemd/user
