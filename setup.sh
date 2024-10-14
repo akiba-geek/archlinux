@@ -77,7 +77,8 @@ curl -sL https://raw.githubusercontent.com/akiba-geek/archlinux/develop/etc-drac
 curl -sL https://raw.githubusercontent.com/akiba-geek/archlinux/develop/etc-dracut.conf.d/50-secure-boot.conf > /mnt/etc/dracut.conf.d/50-secure-boot.conf
 arch-chroot /mnt sbctl create-keys
 arch-chroot /mnt sbctl sign -s -o /usr/lib/systemd/boot/efi/systemd-bootx64.efi.signed /usr/lib/systemd/boot/efi/systemd-bootx64.efi
-arch-chroot /mnt sbctl sign -s -o /usr/lib/fwupd/efi/fwupdx64.efi.signed /usr/lib/fwupd/efi/fwupdx64.efi
+# arch-chroot /mnt sbctl sign -s -o /usr/lib/fwupd/efi/fwupdx64.efi.signed /usr/lib/fwupd/efi/fwupdx64.efi
+# ^ not sure what this is
 arch-chroot /mnt pacman -S --asdeps binutils elfutils --noconfirm
 arch-chroot /mnt dracut -f --uefi --regenerate-all
 rm /mnt/etc/dracut.conf.d/50-secure-boot.conf
