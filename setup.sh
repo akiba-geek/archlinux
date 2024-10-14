@@ -1,8 +1,6 @@
 #!/bin/bash -e
 
 echo "Welcome to Arch Linux. Please wait while we initialize. Remember to set a supervisor password on your UEFI settings."
-sed -i "s/\[options\]/\[options\]\nParallelDownloads = 16/" /etc/pacman.conf
-reflector --save /etc/pacman.d/mirrorlist --protocol https --latest 16 --sort rate
 pacman -Sy dialog sbctl --noconfirm
 while read -r line; do
 	if [[ $(echo $line | awk '{print $1}') == "Setup" ]]; then
@@ -41,6 +39,11 @@ done
 username=$(dialog --stdout --inputbox "Enter username (name for user account)" 0 0) || exit 1
 : ${username:?"username cannot be empty"}
 clear
+countrylist=$(reflector --list-countries | awk -F'  +' 'NR>2 {print $1, $2}')
+country=$(dialog --stdout --menu "Select nearest country" 0 0 0 ${countrylist}) || exit 1
+clear
+reflector --save /etc/pacman.d/mirrorlist --protocol https --age 12 --score 16 --sort rate --country $country
+sed -i "s/\[options\]/\[options\]\nParallelDownloads = 16/" /etc/pacman.conf
 sgdisk -Z $device
 sgdisk -n1:0:+500M -t1:ef00 -c1:EFISYSTEM -n2:0:+1000M -t2:ea00 -c2:XBOOTLDR -N3 -t3:8304 -c3:linux $device
 sleep 3
