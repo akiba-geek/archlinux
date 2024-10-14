@@ -88,7 +88,6 @@ arch-chroot /mnt systemctl enable systemd-homed.service
 arch-chroot /mnt systemctl disable systemd-networkd.service
 arch-chroot /mnt systemctl enable systemd-resolved.service
 arch-chroot /mnt systemctl enable NetworkManager.service
-arch-chroot /mnt systemctl enable libvirtd.service
 arch-chroot /mnt systemctl enable docker.service
 mkdir -p /mnt/etc/NetworkManager
 cat >> /mnt/etc/NetworkManager/NetworkManager.conf <<EOF
@@ -121,7 +120,6 @@ mkdir -p /mnt/root/polybar
 curl -sL https://raw.githubusercontent.com/akiba-geek/archlinux/develop/polybar/config.ini > /mnt/root/polybar/config.ini
 curl -sL https://raw.githubusercontent.com/akiba-geek/archlinux/develop/polybar/iostat.sh > /mnt/root/polybar/iostat.sh
 curl -sL https://raw.githubusercontent.com/akiba-geek/archlinux/develop/polybar/launch.sh > /mnt/root/polybar/launch.sh
-curl -sL https://raw.githubusercontent.com/akiba-geek/archlinux/develop/qemu > /mnt/etc/libvirt/hooks/qemu
 curl -sL https://raw.githubusercontent.com/akiba-geek/archlinux/develop/first_boot.sh > /mnt/root/first_boot.sh
 curl -sL https://raw.githubusercontent.com/akiba-geek/archlinux/develop/lxqt.conf > /mnt/root/lxqt.conf
 curl -sL https://raw.githubusercontent.com/akiba-geek/archlinux/develop/gtk-settings.ini > /mnt/root/gtk-settings.ini
