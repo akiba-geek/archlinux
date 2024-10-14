@@ -39,9 +39,11 @@ done
 username=$(dialog --stdout --inputbox "Enter username (name for user account)" 0 0) || exit 1
 : ${username:?"username cannot be empty"}
 clear
-countrylist=$(reflector --list-countries | awk -F'  +' 'NR>2 {print $1, $2}')
-country=$(dialog --stdout --menu "Select nearest country" 0 0 0 ${countrylist}) || exit 1
+IFS=','
+countrylist=($(reflector --list-countries | awk -F'  +' 'NR>2 {print $2 "," $1 ","}' | tr '\n' ' ' | sed 's/, /,/g'))
+country=$(dialog --stdout --menu "Select nearest country" 0 0 0 ${countrylist[@]}) || exit 1
 clear
+unset IFS
 reflector --save /etc/pacman.d/mirrorlist --protocol https --age 12 --score 16 --sort rate --country $country
 sed -i "s/\[options\]/\[options\]\nParallelDownloads = 16/" /etc/pacman.conf
 sgdisk -Z $device
